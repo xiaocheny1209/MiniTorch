@@ -67,9 +67,11 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
 
     """
     # TODO: Implement for Task 2.1.
+    cur_ord = ordinal + 0
     for i in range(len(shape) - 1, -1, -1):
-        out_index[i] = ordinal % shape[i]
-        ordinal = ordinal // shape[i]
+        sh = shape[i]
+        out_index[i] = int(cur_ord % sh)
+        cur_ord = cur_ord // sh
 
 
 def broadcast_index(
@@ -94,28 +96,12 @@ def broadcast_index(
 
     """
     # TODO: Implement for Task 2.2.
-    diff = len(big_shape) - len(shape)
-    for i in range(len(shape)):
-        out_index[i] = 0 if shape[i] == 1 else big_index[diff + i]
-
-    # big_shape = big_shape[::-1]
-    # shape = shape[::-1]
-
-    # out_index[:] = [0] * len(shape)
-
-    # for i in range(len(shape)):
-    #     if i >= len(
-    #         big_shape
-    #     ):  # If the big shape has more dimensions, the out_index stays 0
-    #         out_index[i] = 0
-    #     elif (
-    #         shape[i] == 1
-    #     ):  # If the dimension in the smaller tensor is 1, it must map to 0
-    #         out_index[i] = 0
-    #     else:  # Otherwise, copy the index from the big tensor
-    #         out_index[i] = big_index[i]
-
-    # out_index = out_index[::-1]
+    for i, s in enumerate(shape):
+        if s > 1:
+            out_index[i] = big_index[i + (len(big_shape) - len(shape))]
+        else:
+            out_index[i] = 0
+    return None
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -136,25 +122,23 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
 
     """
     # TODO: Implement for Task 2.2.
-    result = []
-
-    shape1 = shape1[::-1]
-    shape2 = shape2[::-1]
-
-    for i in range(max(len(shape1), len(shape2))):
-        dim1 = shape1[i] if i < len(shape1) else 1
-        dim2 = shape2[i] if i < len(shape2) else 1
-
-        if dim1 == dim2:
-            result.append(dim1)
-        elif dim1 == 1:
-            result.append(dim2)
-        elif dim2 == 1:
-            result.append(dim1)
+    a, b = shape1, shape2
+    m = max(len(a), len(b))
+    c_rev = [0] * m
+    a_rev = list(reversed(a))
+    b_rev = list(reversed(b))
+    for i in range(m):
+        if i >= len(a):
+            c_rev[i] = b_rev[i]
+        elif i >= len(b):
+            c_rev[i] = a_rev[i]
         else:
-            raise IndexingError("Shapes cannot be broadcast.")
-
-    return tuple(result[::-1])
+            c_rev[i] = max(a_rev[i], b_rev[i])
+            if a_rev[i] != c_rev[i] and a_rev[i] != 1:
+                raise IndexingError(f"Broadcast failure {a} {b}")
+            if b_rev[i] != c_rev[i] and b_rev[i] != 1:
+                raise IndexingError(f"Broadcast failure {a} {b}")
+    return tuple(reversed(c_rev))
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:

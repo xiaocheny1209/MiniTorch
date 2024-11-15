@@ -7,6 +7,7 @@ from typing_extensions import Protocol
 
 from . import operators
 from .tensor_data import (
+    MAX_DIMS,
     broadcast_index,
     index_to_position,
     shape_broadcast,
@@ -273,11 +274,10 @@ def tensor_map(
         in_strides: Strides,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        out_size = len(out)
-        out_index = np.zeros(len(out_shape), dtype=np.int32)
-        in_index = np.zeros(len(in_shape), dtype=np.int32)
+        out_index = np.zeros(MAX_DIMS, dtype=np.int32)  # len(out_shape)
+        in_index = np.zeros(MAX_DIMS, dtype=np.int32)
 
-        for ordinal in range(out_size):
+        for ordinal in range(len(out)):
             to_index(ordinal, out_shape, out_index)
             broadcast_index(out_index, out_shape, in_shape, in_index)
 
@@ -376,19 +376,15 @@ def tensor_reduce(
         reduce_dim: int,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        a_size = len(a_storage)
-        a_index = np.zeros(len(a_shape), dtype=np.int32)
-        out_index = np.zeros(len(out_shape), dtype=np.int32)
-        for ordinal in range(a_size):
-            to_index(ordinal, a_shape, a_index)
-            for dim in range(len(a_shape)):
-                if dim == reduce_dim:
-                    out_index[dim] = 0
-                else:
-                    out_index[dim] = a_index[dim]
-            a_pos = index_to_position(a_index, a_strides)
-            out_pos = index_to_position(out_index, out_strides)
-            out[out_pos] = fn(out[out_pos], a_storage[a_pos])
+        out_index = np.zeros(MAX_DIMS, np.int32)
+        reduce_size = a_shape[reduce_dim]
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            o = index_to_position(out_index, out_strides)
+            for s in range(reduce_size):
+                out_index[reduce_dim] = s
+                j = index_to_position(out_index, a_strides)
+                out[o] = fn(out[o], a_storage[j])
 
     return _reduce
 
