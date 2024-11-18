@@ -340,11 +340,22 @@ def _tensor_matrix_multiply(
         None : Fills in `out`
 
     """
+    assert a_shape[-1] == b_shape[-2], "Incompatible matrix shapes for multiplication"
+
     a_batch_stride = a_strides[0] if a_shape[0] > 1 else 0
     b_batch_stride = b_strides[0] if b_shape[0] > 1 else 0
 
-    # TODO: Implement for Task 3.2.
-    raise NotImplementedError("Need to implement for Task 3.2")
+    N, I, J, K = out_shape[0], out_shape[1], out_shape[2], a_shape[-1]
+    for n in prange(N):
+        for i in prange(I):
+            for j in prange(J):
+                for k in prange(K):
+                    out_ordinal = (
+                        n * out_strides[0] + i * out_strides[1] + j * out_strides[2]
+                    )
+                    a_ordinal = n * a_batch_stride + i * a_strides[1] + k * a_strides[2]
+                    b_ordinal = n * b_batch_stride + k * b_strides[1] + j * b_strides[2]
+                    out[out_ordinal] += a_storage[a_ordinal] * b_storage[b_ordinal]
 
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
