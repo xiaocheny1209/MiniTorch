@@ -1,19 +1,18 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/YFgwt0yY)
-# MiniTorch Module 2
+This project implemented the core components of Pytorch, including:
 
-<img src="https://minitorch.github.io/minitorch.svg" width="50%">
+- Mathematical and computational foundations, including derivatives and backpropagation.
+- Tensor operations, broadcasting, and gradients.
+- Implementing parallelism and optimizing CUDA operations.
+- Building image recognition systems, including LeNet for digit recognition and 1D convolutional models for NLP sentiment classification.
+- Docs: https://minitorch.github.io/
 
-
-* Docs: https://minitorch.github.io/
-
-* Overview: https://minitorch.github.io/module2/module2/
-
-This assignment requires the following files from the previous assignments. You can get these by running
-
+Install the necessary dependencies:
 ```bash
-python sync_previous_module.py previous-module-dir current-module-dir
+python -m pip install -r requirements.txt
+python -m pip install -r requirements.extra.txt
+python -m pip install -Ue .
 ```
 
-The files that will be synced are:
-
-        minitorch/operators.py minitorch/module.py minitorch/autodiff.py minitorch/scalar.py minitorch/scalar_functions.py minitorch/module.py project/run_manual.py project/run_scalar.py project/datasets.py
+Test the codes
+```bash
+pytest
